@@ -13,17 +13,17 @@
 
         <!-- Email -->
         <div class="field">
-          <label class="field-label">Email (company domain only)</label>
+          <label class="field-label">Email</label>
           <input
             v-model="username"
             class="field-input"
             type="text"
-            placeholder="you@booksy.com"
+            placeholder="you@domain.com"
             autocomplete="username"
             required
           />
           <p v-if="domainError" class="field-error">
-            Invalid domain. Please use @booksy.com
+            Invalid format. Please use @domain.com format
           </p>
         </div>
 
@@ -67,7 +67,7 @@ const loading  = ref(false)
 const error    = ref('')
 
 const domainError = computed(() =>
-  username.value.includes('@') && !username.value.endsWith('@booksy.com')
+  username.value.includes('@') && !username.value.endsWith('.com')
 )
 
 async function submit() {

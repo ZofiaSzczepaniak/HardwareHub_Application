@@ -225,8 +225,8 @@ def client(tmp_path, monkeypatch):
     hm.close()
 
     um = original_um(db)
-    um.register("admin@booksy.com", "admin123", role="admin")
-    um.register("user1@booksy.com", "pass123", role="user")
+    um.register("admin@local.com", "admin123", role="admin")
+    um.register("user1@local.com", "pass123", role="user")
     um.close()
 
     return TestClient(main_module.app)
@@ -241,35 +241,35 @@ class TestRentalLogic:
 
     def test_rent_available_item_succeeds(self, client):
         """[CRITICAL] User can rent an Available item."""
-        token = get_token(client, "user1@booksy.com", "pass123")
+        token = get_token(client, "user1@local.com", "pass123")
         r = client.post("/api/hardware/1/rent",
-                        json={"user_id": 2, "username": "user1@booksy.com"},
+                        json={"user_id": 2, "username": "user1@local.com"},
                         headers={"Authorization": f"Bearer {token}"})
         assert r.status_code == 200
 
     def test_cannot_rent_item_already_in_use(self, client):
         """[CRITICAL] Cannot rent an item that is already In Use."""
-        token = get_token(client, "user1@booksy.com", "pass123")
+        token = get_token(client, "user1@local.com", "pass123")
         r = client.post("/api/hardware/2/rent",
-                        json={"user_id": 2, "username": "user1@booksy.com"},
+                        json={"user_id": 2, "username": "user1@local.com"},
                         headers={"Authorization": f"Bearer {token}"})
         assert r.status_code == 400
         assert "In Use" in r.json()["detail"]
 
     def test_cannot_rent_item_in_repair(self, client):
         """[CRITICAL] Cannot rent a device that is under Repair."""
-        token = get_token(client, "user1@booksy.com", "pass123")
+        token = get_token(client, "user1@local.com", "pass123")
         r = client.post("/api/hardware/3/rent",
-                        json={"user_id": 2, "username": "user1@booksy.com"},
+                        json={"user_id": 2, "username": "user1@local.com"},
                         headers={"Authorization": f"Bearer {token}"})
         assert r.status_code == 400
         assert "Repair" in r.json()["detail"]
 
     def test_return_item_in_use_succeeds(self, client):
         """[CRITICAL] Can return an item that is currently In Use (that they rented)."""
-        token = get_token(client, "user1@booksy.com", "pass123")
+        token = get_token(client, "user1@local.com", "pass123")
         client.post("/api/hardware/1/rent",
-                    json={"user_id": 2, "username": "user1@booksy.com"},
+                    json={"user_id": 2, "username": "user1@local.com"},
                     headers={"Authorization": f"Bearer {token}"})
 
         r = client.post("/api/hardware/1/return",
@@ -278,7 +278,7 @@ class TestRentalLogic:
 
     def test_cannot_return_available_item(self, client):
         """[CRITICAL] Cannot return an item that is already Available."""
-        token = get_token(client, "user1@booksy.com", "pass123")
+        token = get_token(client, "user1@local.com", "pass123")
         r = client.post("/api/hardware/1/return",
                         headers={"Authorization": f"Bearer {token}"})
         assert r.status_code == 400
@@ -291,7 +291,7 @@ class TestRentalLogic:
 
     def test_only_admin_can_add_hardware(self, client):
         """[CRITICAL] Regular user cannot add hardware items."""
-        token = get_token(client, "user1@booksy.com", "pass123")
+        token = get_token(client, "user1@local.com", "pass123")
         r = client.post("/api/hardware",
                         json={"name": "Hacked Item", "brand": "Evil", "status": "Available"},
                         headers={"Authorization": f"Bearer {token}"})
@@ -299,7 +299,7 @@ class TestRentalLogic:
 
     def test_admin_can_add_hardware(self, client):
         """Admin can successfully add a hardware item."""
-        token = get_token(client, "admin@booksy.com", "admin123")
+        token = get_token(client, "admin@local.com", "admin123")
         r = client.post("/api/hardware",
                         json={"name": "New Keyboard", "brand": "Keychron",
                               "purchaseDate": "2024-01-01", "status": "Available"},
@@ -308,10 +308,10 @@ class TestRentalLogic:
 
     def test_rent_then_return_flow(self, client):
         """Full cycle: rent → item becomes In Use → return → Available."""
-        token = get_token(client, "user1@booksy.com", "pass123")
+        token = get_token(client, "user1@local.com", "pass123")
 
         client.post("/api/hardware/1/rent",
-                    json={"user_id": 2, "username": "user1@booksy.com"},
+                    json={"user_id": 2, "username": "user1@locall.com"},
                     headers={"Authorization": f"Bearer {token}"})
 
         r = client.get("/api/hardware/1", headers={"Authorization": f"Bearer {token}"})

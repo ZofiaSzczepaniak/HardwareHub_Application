@@ -24,7 +24,7 @@ def get_um(): return UserManager(DB_PATH)
 
 # ─── Default admin credentials ──────────────────────────────
 # Change these before deploying to production!
-DEFAULT_ADMIN_USERNAME = "admin@booksy.com"
+DEFAULT_ADMIN_USERNAME = "admin@local.com"
 DEFAULT_ADMIN_PASSWORD = "admin123"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "") 
 
@@ -66,7 +66,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-SECRET_KEY = "booksy-hardware-hub-secret"
+SECRET_KEY = "local-hardware-hub-secret"
 ALGORITHM = "HS256"
 security = HTTPBearer()
 
@@ -124,8 +124,8 @@ class RentRequest(BaseModel):
 
 @app.post("/api/auth/login")
 def login(req: LoginRequest):
-    if not req.email.endswith("@booksy.com"):
-        raise HTTPException(status_code=400, detail="Invalid domain. Please use @booksy.com")
+    if not req.email.endswith(".com")or "@" not in req.email:
+        raise HTTPException(status_code=400, detail="Invalid format. Please use @domain.com format.")
     um = get_um()
     user = um.login(req.email, req.password)
     um.close()
@@ -136,8 +136,8 @@ def login(req: LoginRequest):
 
 @app.post("/api/auth/register")
 def register(req: RegisterRequest, _=Depends(require_admin)):
-    if not req.email.endswith("@booksy.com"):
-        raise HTTPException(status_code=400, detail="Invalid domain. Please use @booksy.com")
+    if not req.email.endswith(".com") or "@" not in req.email:
+        raise HTTPException(status_code=400, detail="Invalid format. Please use @domain.com format")
     um = get_um()
     result = um.register(req.email, req.password, req.role)
     um.close()
@@ -504,7 +504,7 @@ def seed_db():
 
     # create default admin
     um = get_um()
-    um.register("admin@booksy.com", "admin123", role="admin")
+    um.register("admin@local.com", "admin123", role="admin")
     um.close()
 
     return {"message": f"Seeded {len(items)} items + admin user"}
